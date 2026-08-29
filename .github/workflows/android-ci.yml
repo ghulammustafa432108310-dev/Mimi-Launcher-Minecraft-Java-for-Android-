@@ -1,8 +1,8 @@
-name: Android CI
+name: Android CI Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "patch-" ]
   pull_request:
     branches: [ "main" ]
 
@@ -11,24 +11,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      # Step 1: Repository ki saari files ko checkout karna
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: gradle
+      # Step 2: Java 17 ka Setup karna (Jo launcher compilation ke liye zaroori hai)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
 
-    - name: Grant Execute Permission for Gradlew
-      run: chmod +x gradlew
+      # Step 3: Gradle Wrapper ko executable permission dena
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x gradlew
 
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug
+      # Step 4: Java 17 ke sath Launcher ka Debug APK build karna
+      - name: Build Launcher Debug APK
+        run: ./gradlew assembleDebug
 
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: mimi-launcher-debug
-        path: app/build/outputs/apk/debug/app-debug.apk
+      # Step 5: Custom Artifacts folder banana aur files wahan copy karna
+      - name: Create Artifacts Directory & Copy Files
+        run: |
+          mkdir -p artifacts
+          cp app/build/outputs/apk/debug/*.apk artifacts/
+
+      # Step 6: Pure Artifacts Folder ko upload karna (Bina kisi emoji ke error free)
+      - name: Upload Mimi Launcher Artifacts Folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mimi-Launcher-Artifacts-Folder
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 7
