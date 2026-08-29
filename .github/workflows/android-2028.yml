@@ -2,8 +2,9 @@ name: Mimi Launcher Android CI & Release
 
 on:
   push:
-    branches:
-      - "main" # Jab bhi tum main branch par normal push karoge, release ban jayegi! 🚀
+    branches: [ "main", "patch-" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -36,12 +37,11 @@ jobs:
       - name: Upload Mimi Launcher Artifacts Folder
         uses: actions/upload-artifact@v4
         with:
-          name: mimi-launcher-release-apk
+          name: Mimi-Launcher-Artifacts-Folder
           path: artifacts/
           if-no-files-found: error
           retention-days: 7
 
-      # Har normal push par apne aap unique release banana 🚀🎉
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -50,3 +50,5 @@ jobs:
           tag_name: build-${{ github.run_number }}
           draft: false
           prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
